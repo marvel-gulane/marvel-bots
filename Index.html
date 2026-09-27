@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCLI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #terminal {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  #terminal .prompt {
+    color: #4ec9b0;
+    user-select: none;
+  }
+
+  #input-row {
+    display: flex;
+    align-items: center;
+    padding: 0 16px 16px;
+  }
+
+  #input-row .prompt {
+    color: #4ec9b0;
+    margin-right: 6px;
+    user-select: none;
+  }
+
+  #input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e0e0e0;
+    font: inherit;
+    caret-color: #4ec9b0;
+  }
+
+  /* Blinking cursor effect when input is empty */
+  #input:empty::after {
+    content: '█';
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Scrollbar */
+  #terminal::-webkit-scrollbar { width: 8px; }
+  #terminal::-webkit-scrollbar-track { background: transparent; }
+  #terminal::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="terminal"></div>
+<div id="input-row">
+  <span class="prompt">cli&gt;</span>
+  <input id="input" autocomplete="off" autofocus>
+</div>
+
+<script>
+const term = document.getElementById('terminal');
+const input = document.getElementById('input');
+let history = [];
+let historyIdx = -1;
+
+// ─── WebSocket connection ─────────────────────────────────────
+const ws = new WebSocket(`ws://${location.host}`);
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === 'output') {
+    term.textContent += msg.data;
+    term.scrollTop = term.scrollHeight;
+  } else if (msg.type === 'clear') {
+    term.textContent = '';
+  } else if (msg.type === 'prompt') {
+    input.focus();
+  }
+};
+
+ws.onclose = () => {
+  term.textContent += '\n[disconnected]';
+  input.disabled = true;
+};
+
+// ─── Input handling ───────────────────────────────────────────
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const cmd = input.value;
+    if (cmd.trim()) history.push(cmd);
+    historyIdx = history.length;
+    if (ws.readyState === WebSocket.OPEN) ws.send(cmd);
+    input.value = '';
+  }
+  // History: ArrowUp / ArrowDown
+  else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIdx > 0) {
+      historyIdx--;
+      input.value = history[historyIdx] || '';
+    }
+  }
+  else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIdx < history.length - 1) {
+      historyIdx++;
+      input.value = history[historyIdx] || '';
+    } else {
+      historyIdx = history.length;
+      input.value = '';
+    }
+  }
+});
+
+// Keep focus on input
+document.addEventListener('click', () => input.focus());
+</script>
+</body>
+</html>   
