@@ -1,13 +1,16 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const { WebSocketServer } = require('ws');
-const os = require('os');
+const http 			= require('http');
+const fs 			= require('fs');
+const path 			= require('path');
+const os 			= require('os');
+const { execSync } 			= require('child_process');
+const { WebSocketServer } 	= require('ws');
 
 // ─── Define your commands (like PHP CLI) ───────────────────────
 const commands = {
   help: () => `Available commands:
   help       - Show this message
+  audit	     - Audit system distro
+  connect    - Connect cloud server services
   echo <msg> - Print a message
   date       - Current date/time
   whoami     - Current user
@@ -19,6 +22,10 @@ const commands = {
   exit       - Close session`,
 
   echo: (args) => args.join(' ') || '',
+
+  connect : () => execSync('ssh localhost:8080', {encoding:'utf-8'}),
+
+  audit: () => {const lynis = execSync('lynis audit system', {encoding:'utf-8'}); return `${lynis}`; },
 
   date: () => new Date().toString(),
 
