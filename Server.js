@@ -2,36 +2,87 @@ const http 			= require('http');
 const fs 			= require('fs');
 const path 			= require('path');
 const os 			= require('os');
-const { execSync } 			= require('child_process');
+const { execSync } 		= require('child_process');
 const { WebSocketServer } 	= require('ws');
 
 // ─── Define your commands (like PHP CLI) ───────────────────────
 const commands = {
-  help: () => `Available commands:
+  help: () => `\n\nAvailable commands:
+
   help       - Show this message
-  audit	     - Audit system distro
+  
+  math       - Math for everything
+  pizzas     - Pizza for everyone
+  food       - Food for everyone
+  force      - Force activation
+  monitor    - Monitoring hardware trojans
   connect    - Connect cloud server services
   echo <msg> - Print a message
+  clamscan   - Antivirus scanner
+  news       - Current news today
   date       - Current date/time
   whoami     - Current user
   hostname   - Machine hostname
+  git        - Git push origin 
   uptime     - System uptime
   mem        - Memory usage
-  ping <n>   - Ping (repeats n times)
+  netstat    - Network connections 
+  ping       - Ping domains / ip
   clear      - Clear screen
   exit       - Close session`,
 
-  echo: (args) => args.join(' ') || '',
+  git : async(args) => {
+	const gitremotes = `git remote add url origin ${args[0]}`;
+	const stdout_git = execSync(gitremotes, {encoding:'utf-8'});
+	return stdout_git;
+  },
 
-  connect : () => execSync('ssh localhost:8080', {encoding:'utf-8'}),
+  pizzas : () => {
+	const pizzas = '~/Node/bin/node /home/coderlava/marvel-random/Pizzas.js';
+	const stdout_pizzas = execSync(pizzas, {encoding:'utf-8'});
+	return stdout_pizzas;
+  },
 
-  audit: () => {const lynis = execSync('lynis audit system', {encoding:'utf-8'}); return `${lynis}`; },
+  clamscan : () => {
+	const clamscans = '~/Node/bin/node /home/coderlava/marvel-security/Antivirus.js ./';
+	const stdout_clamscans = execSync(clamscans, {encoding:'utf-8'});
+	return consoles;
+  },
 
-  date: () => new Date().toString(),
+  news : () => {
+	const news = 'cat /home/coderlava/Newstoday*.*';
+	const stdout_news = execSync(news, {encoding:'utf-8'});
+	return stdout_news;
+  },
 
-  whoami: () => os.userInfo().username,
+  netstat : () => { 
+	const nets = 'netstat -antp';
+	const stdout_networks = execSync(nets, {encoding:'utf-8'});
+        return stdout_networks;
+  },
 
-  hostname: () => os.hostname(),
+  math: () => {
+	const formulas = "\n\n\t∫01​∫01​1−xy1​dxdy=6π2​\n\tiℏ∂t∂​∣Ψ⟩=H^∣Ψ⟩\n\tMultiverse(θ)⇒{Un​(xn​,yn​,zn​,tn​):1≤n≤N}\n\t∣Ψuniverse​⟩=i∑​αi​∣Ψworld i​⟩";
+	return formulas;
+  },
+
+  monitor: () => {
+	const monitors = "~/Node/bin/node /home/coderlava/Box/ServerMonitoringHardwareTrojan.js";
+	const stdout_monitors = execSync(monitors, {encoding:'utf-8'});
+	return "Monitor for hardware trojan attacks is now <active!>\n" + stdout_monitors;
+  },
+
+  force: () => {
+	const forces = "~/Node/bin/node /home/coderlava/marvel-random/FightingForce.js";
+	const stdout_forces = execSync(forces, {encoding:'utf-8'});
+	return "Fighting force run successfully!" + stdout_forces;
+  },
+
+  food: () => {
+	const foods = "~/Node/bin/node /home/coderlava/marvel-random/Food.js";
+	const stdout_foods = execSync(foods, {encoding:'utf-8'});
+	return "Food run successfully!" + stdout_foods;
+  },
 
   uptime: () => {
     const secs = Math.floor(os.uptime());
@@ -46,17 +97,20 @@ const commands = {
     return `total: ${total} GB | free: ${free} GB`;
   },
 
-  ping: async (args, send) => {
-    const n = parseInt(args[0]) || 3;
-    for (let i = 0; i < n; i++) {
-      send(`64 bytes: time=${(Math.random() * 50 + 10).toFixed(1)} ms`);
-      await new Promise(r => setTimeout(r, 1000));
-    }
+  ping: async (args) => {
+    const pings = `ping -c 1 ${args[0]}`;
+    const stdout_pings = execSync(pings, {encoding:'utf-8'});
+    return stdout_pings;
   },
 
+  echo: (args) => args.join(' ') || '',
+  connect : () => { return execSync('ssh --help', {encoding:'utf-8'}); },
+  date: () => new Date().toString(),
+  whoami: () => os.userInfo().username,
+  hostname: () => os.hostname(),
   clear: () => '\x01', // special token for client to clear
-
   exit: () => null, // signals disconnect
+
 };
 
 // ─── HTTP + WebSocket server ───────────────────────────────────
@@ -76,8 +130,8 @@ wss.on('connection', (ws) => {
   // Send welcome banner
   ws.send(JSON.stringify({
     type: 'output',
-    data: `MyCLI v1.0 — ${os.platform()} ${os.release()}
-Type 'help' for commands, 'exit' to quit.\n`
+    data: `Coderlava Fedora CLI v1.0 — ${os.platform()} ${os.release()}
+Type 'help' for marvelbot commands, 'exit' to quit.\n`
   }));
   ws.send(JSON.stringify({ type: 'prompt' }));
 
@@ -88,7 +142,7 @@ Type 'help' for commands, 'exit' to quit.\n`
     const [cmd, ...args] = input.split(/\s+/);
 
     // Echo the typed command
-    ws.send(JSON.stringify({ type: 'output', data: `cli> ${input}\n` }));
+    ws.send(JSON.stringify({ type: 'output', data: `marvelbot> ${input}\n` }));
 
     if (cmd === 'exit') {
       ws.send(JSON.stringify({ type: 'output', data: 'Goodbye.\n' }));
@@ -117,4 +171,4 @@ Type 'help' for commands, 'exit' to quit.\n`
   });
 });
 
-server.listen(3000, () => console.log('CLI at http://localhost:3000'));   
+server.listen(8001, () => console.log('CLI at http://localhost:8001'));   
