@@ -10,15 +10,17 @@ const commands = {
   help: () => `\n\nAvailable commands:
 
   help       - Show this message
-  
   math       - Math for everything
   pizzas     - Pizza for everyone
   food       - Food for everyone
   force      - Force activation
+  process    - Show PID of running programs
+  kill       - Kill running process
   monitor    - Monitoring hardware trojans
   connect    - Connect cloud server services
   echo <msg> - Print a message
-  clamscan   - Antivirus scanner
+  clamav     - Clamav scanner 
+  clamscan   - Antivirus scanner native javascript
   news       - Current news today
   date       - Current date/time
   whoami     - Current user
@@ -31,6 +33,21 @@ const commands = {
   clear      - Clear screen
   exit       - Close session`,
 
+  
+  kill : async(args) => {
+	const killproc = `kill ${args[0]}`;
+	const stdout_killproc = execSync(killproc, {encoding:'utf-8'})
+	return stdout_killproc;
+  },
+
+  process : async(args) => {
+	const process = `systemctl status | grep ${args[0]}`;
+	const stdout_process = execSync(process, {encoding:'utf-8'})
+	return stdout_process;
+  },
+
+
+
   git : async(args) => {
 	const gitremotes = `git remote add url origin ${args[0]}`;
 	const stdout_git = execSync(gitremotes, {encoding:'utf-8'});
@@ -41,6 +58,12 @@ const commands = {
 	const pizzas = '~/Node/bin/node /home/coderlava/marvel-random/Pizzas.js';
 	const stdout_pizzas = execSync(pizzas, {encoding:'utf-8'});
 	return stdout_pizzas;
+  },
+
+  clamav : () => {
+	const clamav = 'clamscan --verbose --recursive=yes ./';
+	const stdout_clamav = execSync(clamav, {encoding:'utf-8'});
+	return `${stdout_clamav}`;
   },
 
   clamscan : () => {
@@ -69,19 +92,19 @@ const commands = {
   monitor: () => {
 	const monitors = "~/Node/bin/node /home/coderlava/Box/ServerMonitoringHardwareTrojan.js";
 	const stdout_monitors = execSync(monitors, {encoding:'utf-8'});
-	return "Monitor for hardware trojan attacks is now <active!>\n" + stdout_monitors;
+	return "Monitor for hardware trojan attacks is now <active!>\n\n" + stdout_monitors;
   },
 
   force: () => {
 	const forces = "~/Node/bin/node /home/coderlava/marvel-random/FightingForce.js";
 	const stdout_forces = execSync(forces, {encoding:'utf-8'});
-	return "Fighting force run successfully!" + stdout_forces;
+	return "Fighting force run successfully!\n\n" + stdout_forces;
   },
 
   food: () => {
 	const foods = "~/Node/bin/node /home/coderlava/marvel-random/Food.js";
 	const stdout_foods = execSync(foods, {encoding:'utf-8'});
-	return "Food run successfully!" + stdout_foods;
+	return stdout_foods;
   },
 
   uptime: () => {
