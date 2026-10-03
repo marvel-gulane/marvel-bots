@@ -49,7 +49,7 @@ const commands = {
 
 
   git : async(args) => {
-	const gitremotes = `git remote add url origin ${args[0]}`;
+	const gitremotes = `git remote add origin ${args[0]}`;
 	const stdout_git = execSync(gitremotes, {encoding:'utf-8'});
 	return stdout_git;
   },
