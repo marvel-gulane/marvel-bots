@@ -165,7 +165,7 @@ Type 'help' for marvelbot commands, 'exit' to quit.\n`
     const [cmd, ...args] = input.split(/\s+/);
 
     // Echo the typed command
-    ws.send(JSON.stringify({ type: 'output', data: `marvelbot> ${input}\n` }));
+    ws.send(JSON.stringify({ type: 'output', data: `bot:  ${input}\n` }));
 
     if (cmd === 'exit') {
       ws.send(JSON.stringify({ type: 'output', data: 'Goodbye.\n' }));
